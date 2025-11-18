@@ -23,7 +23,7 @@ def serialize_message(message):
         raise ValueError(f"Неверный формат сообщения {message}")
     return pickle.dumps(message)
 
-def deseralize_message(data):
+def deserialize_message(data):
     message = pickle.loads(data)
     if not validate(message):
         raise ValueError(f"Неверный формат сообщения {message}")

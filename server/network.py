@@ -1,8 +1,9 @@
 import socket
 import threading
-from protocol import serialize_message, deseralize_message
+from server.protocol import serialize_message, deserialize_message
 
 #подключение для одного клиента
+#тут сокет, который принимает входящее подключение от клиента
 class ClientConnection:
     def __init__(self, socket, address, server):
         self.socket = socket #tcp сокет
@@ -23,7 +24,7 @@ class ClientConnection:
                 if not data:
                     break
 
-                message = deseralize_message(data)
+                message = deserialize_message(data)
                 self.server.on_message(self, message)
 
         except Exception as e:
@@ -49,6 +50,8 @@ class ClientConnection:
             print(f"Клиент отключился: {self.address}")
 
 #управляет сокетом сервера и списком клиентов
+#тут слушающий сокет, который принимает новые подключения и создает парные
+# сокеты
 class NetworkServer:
     def __init__(self, host="0.0.0.0", port=5000):
         self.host = host
