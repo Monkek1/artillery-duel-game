@@ -2,7 +2,7 @@ import socket
 import threading
 from server.protocol import serialize_message, deserialize_message
 
-#управление сокетом клиента
+#принятие исходящего подключения от клиента
 class NetworkClient:
     def __init__(self, host="127.0.0.1", port=5000):
         #адрес и порт сервера, к которому будет подключаться
@@ -17,7 +17,6 @@ class NetworkClient:
         self.on_message = lambda msg: None
         self.on_connect = lambda: None
         self.on_disconnect = lambda: None
-
 
     def connect(self, host=None, port=None):
         if self.alive:
@@ -34,6 +33,7 @@ class NetworkClient:
         self.alive = True
 
         #запускаем фоновый поток, который слушает сокет
+        #говорим в точку запуска что зашли
         self.on_connect()
         threading.Thread(target=self._listen, daemon=True).start()
 
@@ -46,12 +46,14 @@ class NetworkClient:
                 if not data:
                     break
                 msg = deserialize_message(data)
+                #говорим в точку запуска что отправляем сообщение
                 self.on_message(msg)
         except Exception as e:
             print(f"Client listen error: {e}")
         finally:
             self.close()
 
+    #отправка сообщения от клиента с сериализацией по протокоул
     def send(self, message):
         if not self.alive:
             raise RuntimeError("Client is not connected")
@@ -74,4 +76,5 @@ class NetworkClient:
             self.socket.close()
         except Exception:
             pass
+        #говорим в точку запуска что вышли
         self.on_disconnect()

@@ -49,7 +49,7 @@ class ClientConnection:
             self.server.on_disconnect(self)
             print(f"Клиент отключился: {self.address}")
 
-#управляет сокетом сервера и списком клиентов
+#сам сервер (не точка запуска сервера)
 #тут слушающий сокет, который принимает новые подключения и создает парные
 # сокеты
 class NetworkServer:
@@ -65,7 +65,7 @@ class NetworkServer:
         self.on_connect = lambda client: None
         self.on_disconnect = lambda client: None
 
-    #создание и запуск серверного сокета
+    #создание и запуск слушающего порт сокета
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
@@ -77,16 +77,17 @@ class NetworkServer:
 
     def accept_clients(self):
         while True:
+            #здесь создается соединение сервер-клиент
             client_sock, addr = self.server_socket.accept()
             print(f"Подключился клиент: {addr}")
 
-            # обслуживание одного клиента
+            # передаем TCP-соедниение и адрес клиента в наше входящее подключение
             conn = ClientConnection(client_sock, addr, self)
             # добавление этого клиента в список
             self.clients.append(conn)
             # сообщение серверу что клиент подключился
             self.on_connect(conn)
-            # запуск потока прослушивания сообщений от клиента
+            # запуск демон потока который принимает сообщения от клиента
             conn.start()
 
     #отправка сообщений клиентам
